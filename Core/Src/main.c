@@ -89,15 +89,18 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
-
+int count = 0 ;//HAL_GetTick();
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-	   HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-	   HAL_Delay(500);
-    /* USER CODE BEGIN 3 */
+	  if(HAL_GetTick()-count >= 500){
+		  count = HAL_GetTick();
+		  HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+	  }
+
+
+
   }
   /* USER CODE END 3 */
 }
