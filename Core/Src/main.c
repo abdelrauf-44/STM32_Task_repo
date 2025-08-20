@@ -58,7 +58,7 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
-
+uint16_t ADC_REG = 0;
 /**
   * @brief  The application entry point.
   * @retval int
@@ -91,7 +91,7 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
-  uint16_t ADC_REG = 0;
+
   HAL_ADCEx_Calibration_Start(&hadc1);
 
 
@@ -103,11 +103,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  HAL_ADC_Start(&hadc1);
-	  HAL_ADC_PollForConversion(&hadc1, 1);
-	  ADC_REG = HAL_ADC_GetValue(&hadc1);
+	  HAL_ADC_Start_IT(&hadc1);
 
-	  HAL_Delay(1);
 	  if(ADC_REG >= 300){
 
 		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
@@ -121,6 +118,12 @@ int main(void)
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
+}
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+    // Read & Update The ADC Result
+	ADC_REG = HAL_ADC_GetValue(&hadc1);
 }
 
 /**
