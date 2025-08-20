@@ -41,6 +41,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
+DMA_HandleTypeDef hdma_adc1;
 
 /* USER CODE BEGIN PV */
 
@@ -49,6 +50,7 @@ ADC_HandleTypeDef hadc1;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_ADC1_Init(void);
 /* USER CODE BEGIN PFP */
 
@@ -56,9 +58,9 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint32_t ADC_REG = 0;
 /* USER CODE END 0 */
-uint16_t ADC_REG = 0;
+
 /**
   * @brief  The application entry point.
   * @retval int
@@ -88,6 +90,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
@@ -103,18 +106,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  HAL_ADC_Start_IT(&hadc1);
-
-	  if(ADC_REG >= 300){
-
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
-
-	  }
-	  else{
-
-		  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
-
-	  }
+	  HAL_ADC_Start_DMA(&hadc1,&ADC_REG , 1);
+	  HAL_Delay(1);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -122,9 +115,19 @@ int main(void)
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-    // Read & Update The ADC Result
-	ADC_REG = HAL_ADC_GetValue(&hadc1);
+
+	if(ADC_REG>= 300){
+
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
+
+	}
+	else {
+
+		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
+
+	}
 }
+
 
 /**
   * @brief System Clock Configuration
@@ -216,6 +219,22 @@ static void MX_ADC1_Init(void)
   /* USER CODE BEGIN ADC1_Init 2 */
 
   /* USER CODE END ADC1_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
 
 }
 
