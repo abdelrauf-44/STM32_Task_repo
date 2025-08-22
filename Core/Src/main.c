@@ -32,15 +32,11 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define LED_Number 8
-
-
 #define WS2812B_HIGH 2
 #define WS2812B_LOW  1
 
-uint8_t LED_data [LED_Number][4];
 uint16_t PWM_data [24*LED_Number];
-
-uint8_t datasendflag = 0;
+uint32_t ADCREG = 0;
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -152,25 +148,9 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
- // HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);
-//  HAL_ADCEx_Calibration_Start(&hadc1);
+
+  HAL_ADCEx_Calibration_Start(&hadc1);
   reset_all_led();
-  Set_LED(0,0,0,255);
-  WS2812B_SEND();
-  Set_LED(1,255,255,0);
-  WS2812B_SEND();
-  Set_LED(2,0,255,255);
-  WS2812B_SEND();
-  Set_LED(3,255,255,0);
-  WS2812B_SEND();
-  Set_LED(4,0,255,255);
-  WS2812B_SEND();
-  Set_LED(5,255,255,0);
-  WS2812B_SEND();
-  Set_LED(6,0,255,255);
-  WS2812B_SEND();
-  Set_LED(7,255,255,0);
-//
   WS2812B_SEND();
   /* USER CODE END 2 */
 
@@ -179,15 +159,62 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+	  HAL_ADC_Start_DMA(&hadc1, &ADCREG, 1);
+	  HAL_Delay(1);
 
-//	  Set_LED(1, 0, 255, 255);     // Green
-//	  Set_LED(7, 0, 255, 255);     // Green
-//
-//	  WS2812B_SEND();
+
 
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
+}
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+
+	float RGB = (ADCREG*255)/3300;
+	if(ADCREG >= 3300){
+
+		reset_all_led();
+	    WS2812B_SEND();
+	  	Set_LED(0,255,255-(int)RGB,0);
+	  	Set_LED(1,255,0,0);
+	  	Set_LED(2,255,0,0);
+
+
+	    WS2812B_SEND();
+	}
+	else if(ADCREG>=2200) {
+
+		reset_all_led();
+	    WS2812B_SEND();
+	  	Set_LED(0,(int)RGB,255,0);
+	  	Set_LED(3,255,255,0);
+	  	Set_LED(4,255,255,0);
+
+	    WS2812B_SEND();
+
+	}
+
+	else if(ADCREG>=1100) {
+
+		reset_all_led();
+	    WS2812B_SEND();
+	  	Set_LED(0,0,(int)RGB,255);
+	  	Set_LED(5,0,255,0);
+	  	Set_LED(6,0,255,0);
+	  	Set_LED(7,0,255,0);
+	    WS2812B_SEND();
+
+	}
+
+	else {
+		reset_all_led();
+	    WS2812B_SEND();
+	}
+
+
+
+
 }
 
 /**
@@ -353,10 +380,10 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 2, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 1, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   /* DMA1_Channel5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 1, 0);
+  HAL_NVIC_SetPriority(DMA1_Channel5_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
 }
