@@ -53,37 +53,13 @@ static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
-
+char msg[] = "Hello from STM32\n";
+int sent = 1;
 /* Private user code ---------------------------------------------------------*/
-
-uint8_t msg_rx[100];
-uint8_t Rx_data;
-int idx = 0;
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
 
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-	if(Rx_data == '\n'){
-		msg_rx[idx] = '\0';
-		if(strcmp((char*)msg_rx, "OFF") == 0){
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
-			char msg[] = "LED is OFF\n";
-			HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-		}else{
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
-			char msg[] = "LED is ON\n";
-			HAL_UART_Transmit(&huart1, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-		}
-
-		idx = 0; // reset buffer
-	}
-
-	else {
-
-		msg_rx [idx++]= Rx_data;
-
-	}
-		HAL_UART_Receive_IT(&huart1, &Rx_data, 1);
+	sent = 1;
 
 
 }
@@ -120,7 +96,7 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  HAL_UART_Receive_IT(&huart1, &Rx_data, 1);
+
   /* USER CODE END 2 */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
   /* Infinite loop */
@@ -128,7 +104,10 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  if(sent == 1){
+		  HAL_UART_Transmit_IT(&huart1, (uint8_t*)msg, strlen(msg));
+		  sent = 0;
+	  }
 	 // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
     /* USER CODE BEGIN 3 */
   }
