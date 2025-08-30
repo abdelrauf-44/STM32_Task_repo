@@ -55,7 +55,7 @@ static void MX_USART1_UART_Init(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
+
 uint8_t msg_rx[100];
 uint8_t Rx_data;
 int idx = 0;
