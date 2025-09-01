@@ -66,7 +66,7 @@ uint8_t Rx_data, Checksum;
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart){
 
-
+	HAL_UART_Transmit(&huart1,Data , sizeof(Data),100);
 	HAL_UART_Receive_DMA(&huart1, Buffer_Rx, 15);
 
 
@@ -86,14 +86,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 
 		if((Yaw_angle == 0x0001)&(Yaw_rate == 0x0002)&(x_acc== 0x0003)&(y_acc == 0x0004)&(z_acc == 0x0005))
 		{
-		    uint8_t msg[] = "Received correctly/n";
+		    uint8_t msg[] = "Received correctly\n";
 			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 1);
 			HAL_UART_Transmit_IT(&huart1, (uint8_t*)msg, sizeof(msg));
 		}
 		else{
-		   // uint8_t msg[] = "Received Wrong/n";
+		    uint8_t msg[] = "Received Wrong\n";
 		  	HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, 0);
-			HAL_UART_Transmit_IT(&huart1, (uint8_t*) Data, sizeof(Data));
+			HAL_UART_Transmit_IT(&huart1, (uint8_t*)msg, sizeof(msg));
 
 	     }
 

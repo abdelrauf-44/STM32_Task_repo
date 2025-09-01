@@ -31,7 +31,12 @@ while True:
     if ser.in_waiting > 0:
         echo = ser.read(ser.in_waiting)
         try:
-            text = echo.decode('utf-8').strip()
-            print("Received text from STM32:", text)
-        except UnicodeDecodeError:
-            print("Received non-text data:", echo.hex())
+            text = echo.decode('utf-8', errors='ignore')
+        except Exception:
+            text = ""
+        
+        if '\n' in text:
+            text_part, hex_part = text.split('\n', 1)
+            print("Received text from STM32:", text_part)
+            print("Received hex data from STM32:", hex_part.encode().hex().rstrip('00'))
+
