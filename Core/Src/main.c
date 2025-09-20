@@ -43,27 +43,10 @@
 /* Private variables ---------------------------------------------------------*/
 UART_HandleTypeDef huart1;
 
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityAboveNormal,
-};
-/* Definitions for Task_2 */
-osThreadId_t Task_2Handle;
-const osThreadAttr_t Task_2_attributes = {
-  .name = "Task_2",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for Task3 */
-osThreadId_t Task3Handle;
-const osThreadAttr_t Task3_attributes = {
-  .name = "Task3",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityBelowNormal,
-};
+osThreadId defaultTaskHandle;
+osThreadId Task_2Handle;
+osThreadId Task3Handle;
+osSemaphoreId BinsemaphoreHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -72,9 +55,9 @@ const osThreadAttr_t Task3_attributes = {
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
-void StartDefaultTask(void *argument);
-void Task2_init(void *argument);
-void Task3_init(void *argument);
+void StartDefaultTask(void const * argument);
+void Task2_init(void const * argument);
+void Task3_init(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -119,12 +102,14 @@ int main(void)
 
   /* USER CODE END 2 */
 
-  /* Init scheduler */
-  osKernelInitialize();
-
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
+
+  /* Create the semaphores(s) */
+  /* definition and creation of Binsemaphore */
+  osSemaphoreDef(Binsemaphore);
+  BinsemaphoreHandle = osSemaphoreCreate(osSemaphore(Binsemaphore), 1);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -139,22 +124,21 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* definition and creation of defaultTask */
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityAboveNormal, 0, 128);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
-  /* creation of Task_2 */
-  Task_2Handle = osThreadNew(Task2_init, NULL, &Task_2_attributes);
+  /* definition and creation of Task_2 */
+  osThreadDef(Task_2, Task2_init, osPriorityNormal, 0, 128);
+  Task_2Handle = osThreadCreate(osThread(Task_2), NULL);
 
-  /* creation of Task3 */
-  Task3Handle = osThreadNew(Task3_init, NULL, &Task3_attributes);
+  /* definition and creation of Task3 */
+  osThreadDef(Task3, Task3_init, osPriorityBelowNormal, 0, 128);
+  Task3Handle = osThreadCreate(osThread(Task3), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
-
-  /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
   osKernelStart();
@@ -297,14 +281,24 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+void StartDefaultTask(void const * argument)
 {
   /* USER CODE BEGIN 5 */
+	//osTimerStart(Tim_200msHandle, 1200);
+
   /* Infinite loop */
   for(;;)
   {
-	HAL_GPIO_TogglePin(GPIOA,  GPIO_PIN_1);
-	osDelay(500);
+
+	osSemaphoreWait(BinsemaphoreHandle, osWaitForever);
+
+
+	HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_0);
+	HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
+
+
+	osSemaphoreRelease(BinsemaphoreHandle);
+	osDelay(1);
 
   }
   /* USER CODE END 5 */
@@ -317,14 +311,20 @@ void StartDefaultTask(void *argument)
 * @retval None
 */
 /* USER CODE END Header_Task2_init */
-void Task2_init(void *argument)
+void Task2_init(void const * argument)
 {
   /* USER CODE BEGIN Task2_init */
   /* Infinite loop */
   for(;;)
   {
-		HAL_GPIO_TogglePin(GPIOA,  GPIO_PIN_1);
-	    osDelay(1000);
+
+		osSemaphoreWait(BinsemaphoreHandle, osWaitForever);
+
+		osDelay(200);
+
+		osSemaphoreRelease(BinsemaphoreHandle);
+//		HAL_GPIO_TogglePin(GPIOA,  GPIO_PIN_1);
+//	    osDelay(1000);
   }
   /* USER CODE END Task2_init */
 }
@@ -336,14 +336,14 @@ void Task2_init(void *argument)
 * @retval None
 */
 /* USER CODE END Header_Task3_init */
-void Task3_init(void *argument)
+void Task3_init(void const * argument)
 {
   /* USER CODE BEGIN Task3_init */
   /* Infinite loop */
   for(;;)
   {
-		HAL_GPIO_TogglePin(GPIOA,  GPIO_PIN_2);
-	    osDelay(1500);
+//		HAL_GPIO_TogglePin(GPIOA,  GPIO_PIN_2);
+//	    osDelay(1500);
   }
   /* USER CODE END Task3_init */
 }
