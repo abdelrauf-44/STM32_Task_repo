@@ -46,7 +46,7 @@ UART_HandleTypeDef huart1;
 osThreadId defaultTaskHandle;
 osThreadId Task_2Handle;
 osThreadId Task3Handle;
-osSemaphoreId BinsemaphoreHandle;
+osMutexId Mutex_200msHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -102,14 +102,14 @@ int main(void)
 
   /* USER CODE END 2 */
 
+  /* Create the mutex(es) */
+  /* definition and creation of Mutex_200ms */
+  osMutexDef(Mutex_200ms);
+  Mutex_200msHandle = osMutexCreate(osMutex(Mutex_200ms));
+
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
-
-  /* Create the semaphores(s) */
-  /* definition and creation of Binsemaphore */
-  osSemaphoreDef(Binsemaphore);
-  BinsemaphoreHandle = osSemaphoreCreate(osSemaphore(Binsemaphore), 1);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
@@ -290,14 +290,14 @@ void StartDefaultTask(void const * argument)
   for(;;)
   {
 
-	osSemaphoreWait(BinsemaphoreHandle, osWaitForever);
+	xSemaphoreTake(Mutex_200msHandle,portMAX_DELAY);
 
 
 	HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_0);
 	HAL_GPIO_TogglePin(GPIOC,GPIO_PIN_13);
 
 
-	osSemaphoreRelease(BinsemaphoreHandle);
+	xSemaphoreGive(Mutex_200msHandle);
 	osDelay(1);
 
   }
@@ -318,11 +318,11 @@ void Task2_init(void const * argument)
   for(;;)
   {
 
-		osSemaphoreWait(BinsemaphoreHandle, osWaitForever);
+		xSemaphoreTake(Mutex_200msHandle,portMAX_DELAY);
 
 		osDelay(200);
 
-		osSemaphoreRelease(BinsemaphoreHandle);
+		xSemaphoreGive(Mutex_200msHandle);
 //		HAL_GPIO_TogglePin(GPIOA,  GPIO_PIN_1);
 //	    osDelay(1000);
   }

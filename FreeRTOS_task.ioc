@@ -2,8 +2,8 @@
 CAD.formats=
 CAD.pinconfig=
 CAD.provider=
-FREERTOS.BinarySemaphores01=Binsemaphore,Dynamic,NULL,Available
-FREERTOS.IPParameters=Tasks01,configUSE_NEWLIB_REENTRANT,BinarySemaphores01,configUSE_TIMERS,configTIMER_TASK_PRIORITY
+FREERTOS.IPParameters=Tasks01,configUSE_NEWLIB_REENTRANT,configUSE_TIMERS,configTIMER_TASK_PRIORITY,Mutexes01
+FREERTOS.Mutexes01=Mutex_200ms,Dynamic,NULL,Available
 FREERTOS.Tasks01=defaultTask,1,128,StartDefaultTask,Default,NULL,Dynamic,NULL,NULL;Task_2,0,128,Task2_init,Default,NULL,Dynamic,NULL,NULL;Task3,-1,128,Task3_init,Default,NULL,Dynamic,NULL,NULL
 FREERTOS.configTIMER_TASK_PRIORITY=6
 FREERTOS.configUSE_NEWLIB_REENTRANT=1
